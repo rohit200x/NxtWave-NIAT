@@ -1,0 +1,17 @@
+NIAT Decision Lab — suggested 90-second Loom narration
+
+0:00–0:12  "This is NIAT Decision Lab, a new bottom-of-funnel conversion mechanism. I found that NIAT already offers WhatsApp, counsellors, bootcamps and proof-led marketing, so I built something different: a two-person decision workflow."
+
+0:12–0:25  "A warm lead gets one room, with separate student and parent links. Neither sees the other's submission during intake. Both explicitly consent before storage, and there are no names or phone numbers collected."
+
+0:25–0:39  "Here the student is interested in AI projects and the relationship to university coursework. The parent instead wants a written four-year cost and refund breakdown. These are different blockers, even if both people originally clicked the same admissions advert."
+
+0:39–0:56  "This is not a chat UI. A locally trained scikit-learn NLP model actually classifies the two responses. The product joins those topics to a curated primary-source evidence library. Each fact is paired with an important caveat, and missing campus-specific information becomes a proof request rather than a confident guess."
+
+0:56–1:10  "The review request creates a ticket. The dashboard counts actual prototype events and clearly separates synthetic demo entries. The counsellor-only queue requires a password, supports resolving evidence questions, records manual outcomes and exports CSV."
+
+1:10–1:25  "My first experiment would randomise 400 warm households, 200 into this lab and 200 into usual counselling. The primary metric is verified next-step completion per assigned household, not clicks. A six-point absolute improvement would justify further testing, with strict zero-misinformation guardrails."
+
+1:25–1:30  "The app is a tested prototype, not a live NIAT service. I would only roll it into production with real counsellor approvals, privacy controls and a hosted demonstration."
+
+Recording tip: Record the REAL publicly deployed site, with microphone and cursor, to satisfy the challenge's live link + Loom requirement. The included silent MP4 is a preview and evidence of UI behaviour, not a substitute for a hosted Loom.
