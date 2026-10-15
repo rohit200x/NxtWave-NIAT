@@ -1,6 +1,6 @@
 from __future__ import annotations
 import csv, hashlib, io, json, os, secrets, sqlite3, time
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
@@ -13,7 +13,19 @@ from .engine import EVIDENCE, build_brief, optional_llm_summary
 ROOT=Path(__file__).resolve().parent
 DB_PATH=Path(os.getenv('NIAT_DB_PATH',str(ROOT.parent/'data.sqlite3')))
 DEMO_MODE=os.getenv('DEMO_MODE','1')!='0'
-app=FastAPI(title='NIAT Decision Lab',description='Consent-first student/parent paired decision evidence flow')
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    if DEMO_MODE:
+        try:
+            import seed_demo
+            seed_demo.seed()
+        except Exception as e:
+            print(f'Notice: demo seeding skipped: {e}')
+    yield
+
+app=FastAPI(title='NIAT Decision Lab',description='Consent-first student/parent paired decision evidence flow',lifespan=lifespan)
 app.mount('/static', StaticFiles(directory=str(ROOT/'static')),name='static')
 templates=Jinja2Templates(directory=str(ROOT/'templates'))
 security=HTTPBasic(auto_error=False)
@@ -36,7 +48,6 @@ def init_db():
         CREATE TABLE IF NOT EXISTS responses (session_code TEXT NOT NULL,role TEXT NOT NULL,concern TEXT NOT NULL, priority TEXT NOT NULL,readiness TEXT NOT NULL, location TEXT DEFAULT '',updated_at TEXT NOT NULL,PRIMARY KEY(session_code,role));
         CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT,code TEXT,event TEXT NOT NULL,time TEXT NOT NULL,meta TEXT DEFAULT '{}');
         CREATE TABLE IF NOT EXISTS followups (id INTEGER PRIMARY KEY AUTOINCREMENT,code TEXT NOT NULL,topic TEXT NOT NULL,question TEXT NOT NULL,status TEXT DEFAULT 'open',created_at TEXT NOT NULL,UNIQUE(code,topic));''')
-init_db()
 
 def log(c,code,event,meta=None): c.execute('INSERT INTO events(code,event,time,meta) VALUES(?,?,?,?)',(code,event,now(),json.dumps(meta or {})))
 def grab(c,code):
