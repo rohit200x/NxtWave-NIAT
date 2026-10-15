@@ -11,7 +11,28 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from .engine import EVIDENCE, build_brief, optional_llm_summary
 ROOT=Path(__file__).resolve().parent
-DB_PATH=Path(os.getenv('NIAT_DB_PATH',str(ROOT.parent/'data.sqlite3')))
+
+def get_db_path() -> Path:
+    candidates = []
+    env_path = os.getenv('NIAT_DB_PATH')
+    if env_path:
+        candidates.append(Path(env_path))
+    candidates.extend([
+        ROOT.parent / 'data.sqlite3',
+        Path('/tmp/niat.sqlite3')
+    ])
+    for candidate in candidates:
+        try:
+            candidate.parent.mkdir(parents=True, exist_ok=True)
+            test_file = candidate.parent / f'.perm_test_{os.getpid()}'
+            test_file.touch()
+            test_file.unlink()
+            return candidate
+        except (PermissionError, OSError):
+            continue
+    return ROOT.parent / 'data.sqlite3'
+
+DB_PATH=get_db_path()
 DEMO_MODE=os.getenv('DEMO_MODE','1')!='0'
 
 @asynccontextmanager
@@ -33,7 +54,10 @@ security=HTTPBasic(auto_error=False)
 def now():return datetime.now(timezone.utc).isoformat(timespec='seconds')
 @contextmanager
 def db():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    except (PermissionError, OSError):
+        pass
     conn=sqlite3.connect(str(DB_PATH), timeout=10)
     conn.row_factory=sqlite3.Row
     conn.execute('PRAGMA journal_mode=WAL')
